@@ -1703,6 +1703,66 @@ describe('$(...)', () => {
       expect($.html($src)).toBe('<b>a b c d</b>');
     });
 
+    it('(str, str) : should replace a single selected element with all contents', () => {
+      $('.orange').replaceWith(
+        '<li class="plum">Plum</li>',
+        '<li class="grape">Grape</li>',
+      );
+
+      expect($fruits.children()).toHaveLength(4);
+      expect($fruits.children().eq(0).hasClass('apple')).toBe(true);
+      expect($fruits.children().eq(1).hasClass('plum')).toBe(true);
+      expect($fruits.children().eq(2).hasClass('grape')).toBe(true);
+      expect($fruits.children().eq(3).hasClass('pear')).toBe(true);
+    });
+
+    it('(str, str) : should replace each selected element with all contents', () => {
+      const $replaced = $fruits
+        .children()
+        .replaceWith(
+          '<li class="plum">Plum</li>',
+          '<li class="grape">Grape</li>',
+        );
+
+      expect($fruits.children()).toHaveLength(6);
+      expect($fruits.children().eq(0).hasClass('plum')).toBe(true);
+      expect($fruits.children().eq(1).hasClass('grape')).toBe(true);
+      expect($fruits.children().eq(2).hasClass('plum')).toBe(true);
+      expect($fruits.children().eq(3).hasClass('grape')).toBe(true);
+      expect($fruits.children().eq(4).hasClass('plum')).toBe(true);
+      expect($fruits.children().eq(5).hasClass('grape')).toBe(true);
+      expect($replaced[0].parentNode).toBe(null);
+    });
+
+    it('(Node, Node) : should use both nodes when replacing multiple elements', () => {
+      const $plum = $('<li class="plum">Plum</li>');
+      const $grape = $('<li class="grape">Grape</li>');
+
+      $('.apple, .orange').replaceWith($plum, $grape);
+
+      // Nodes are moved, not cloned, as before.
+      expect($fruits.children()).toHaveLength(3);
+      expect($fruits.children().eq(0).hasClass('plum')).toBe(true);
+      expect($fruits.children().eq(1).hasClass('grape')).toBe(true);
+      expect($fruits.children().eq(2).hasClass('pear')).toBe(true);
+      expect($plum[0].parent).toBe($fruits[0]);
+      expect($grape[0].parent).toBe($fruits[0]);
+    });
+
+    it('(Array) : should replace all selected elements with all array elements', () => {
+      const more = $(
+        '<li class="plum">Plum</li><li class="grape">Grape</li>',
+      ).get();
+      const $replaced = $('.apple, .orange').replaceWith(more);
+
+      // Nodes are moved, not cloned, as before.
+      expect($fruits.children()).toHaveLength(3);
+      expect($fruits.children().eq(0).hasClass('plum')).toBe(true);
+      expect($fruits.children().eq(1).hasClass('grape')).toBe(true);
+      expect($fruits.children().eq(2).hasClass('pear')).toBe(true);
+      expect($replaced[0].parentNode).toBe(null);
+    });
+
     it('(fn) : should invoke the callback with the correct argument and context', () => {
       const origChildren = $fruits.children().get();
       const args: [number, AnyNode][] = [];

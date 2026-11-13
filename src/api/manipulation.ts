@@ -869,13 +869,30 @@ export function remove<T extends AnyNode>(
  * //   </ul>
  * ```
  *
- * @param content - Replacement for matched elements.
+ * Multiple replacements can be passed as separate arguments; each selected
+ * element is replaced with all of them, in order.
+ *
+ * ```js
+ * $('.apple').replaceWith('<li class="plum">Plum</li>', '<li class="grape">Grape</li>');
+ * $.html();
+ * //=> <ul id="fruits">
+ * //     <li class="plum">Plum</li>
+ * //     <li class="grape">Grape</li>
+ * //     <li class="orange">Orange</li>
+ * //     <li class="pear">Pear</li>
+ * //   </ul>
+ * ```
+ *
+ * @param elems - Replacement for matched elements. Multiple arguments are
+ *   applied in order to every matched element.
  * @returns The instance itself.
  * @see {@link https://api.jquery.com/replaceWith/}
  */
 export function replaceWith<T extends AnyNode>(
   this: Cheerio<T>,
-  content: AcceptedElems<AnyNode>,
+  ...elems:
+    | [(this: AnyNode, i: number, el: AnyNode) => BasicAcceptedElems<AnyNode>]
+    | [BasicAcceptedElems<AnyNode>, ...BasicAcceptedElems<AnyNode>[]]
 ): Cheerio<T> {
   return domEach(this, (el, i) => {
     const { parent } = el;
@@ -885,7 +902,9 @@ export function replaceWith<T extends AnyNode>(
 
     const siblings: AnyNode[] = parent.children;
     const cont =
-      typeof content === 'function' ? content.call(el, i, el) : content;
+      typeof elems[0] === 'function'
+        ? elems[0].call(el, i, el)
+        : (elems as BasicAcceptedElems<AnyNode>[]);
     const dom = this._makeDomArray(cont);
 
     /*
